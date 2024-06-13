@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useMemo} from 'react';
 import Button from '@mui/material/Button'
 
 import socket from '../services/taxi_socket';
@@ -7,14 +7,18 @@ import { TextField } from '@mui/material';
 function Customer(props) {
   let [pickupAddress, setPickupAddress] = useState("Tecnologico de Monterrey, campus Puebla, Mexico");
   let [dropOffAddress, setDropOffAddress] = useState("Triangulo Las Animas, Puebla, Mexico");
-  let [msg, setMsg] = useState("");
+  let [mensaje, setMensaje] = useState("");
+
+  // useMemo(() => {
+  //   console.log("Mensaje: ",mensaje)
+  // }, [mensaje])
 
   useEffect(() => {
     let channel = socket.channel("customer:" + props.username, {token: "123"});
     channel.on("greetings", data => console.log(data));
     channel.on("booking_request", data => {
       console.log("Received", data);
-      setMsg(data.msg);
+      setMensaje(data.mensaje);
     });
     channel.join();
   },[props]);
@@ -24,7 +28,7 @@ function Customer(props) {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({pickup_address: pickupAddress, dropoff_address: dropOffAddress, username: props.username})
-    }).then(resp => resp.json()).then(data => setMsg(data.msg));
+    }).then(resp => resp.json()).then(data => setMensaje(data.mensaje));
   };
 
   return (
@@ -42,7 +46,7 @@ function Customer(props) {
         <Button onClick={submit} variant="outlined" color="primary">Submit</Button>
       </div>
       <div style={{backgroundColor: "lightcyan", height: "50px"}}>
-        {msg}
+        {mensaje}
       </div>
     </div>
   );

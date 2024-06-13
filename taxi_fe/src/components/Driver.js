@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import Button from '@mui/material/Button';
 
 import socket from '../services/taxi_socket';
@@ -8,13 +8,21 @@ function Driver(props) {
   let [message, setMessage] = useState();
   let [bookingId, setBookingId] = useState();
   let [visible, setVisible] = useState(false);
+  let [notification, setNotification] = useState("")
+  let [visibleNotify, setVisibleNotify] = useState(false)
+
   useEffect(() => {
     let channel = socket.channel("driver:" + props.username, {token: "123"});
     channel.on("booking_request", data => {
       console.log("Received", data);
-      setMessage(data.msg);
+      setMessage(data.mensaje);
       setBookingId(data.bookingId);
       setVisible(true);
+    });
+    channel.on("booking_notification", data => {
+      console.log("notification", data);
+      setNotification(data.mensaje);
+      setVisibleNotify(true);
     });
     channel.join();
   },[props]);
@@ -42,6 +50,13 @@ function Driver(props) {
               <Button onClick={() => reply("accept")} variant="outlined" color="primary">Accept</Button>
               <Button onClick={() => reply("reject")} variant="outlined" color="secondary">Reject</Button>
             </Card> :
+            null
+          }
+          {
+            visibleNotify ?
+              <span>{notification}</span>
+            :
+
             null
           }
         </div>
