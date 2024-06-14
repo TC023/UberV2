@@ -53,11 +53,7 @@ function Driver(props) {
             null
           }
           {
-            visibleNotify ?
-              <span>{notification}</span>
-            :
-
-            null
+            visibleNotify ? <span>{notification}</span>:null
           }
         </div>
     </div>
