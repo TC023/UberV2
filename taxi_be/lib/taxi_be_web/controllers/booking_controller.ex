@@ -11,20 +11,26 @@ defmodule TaxiBeWeb.BookingController do
     conn
     |> put_resp_header("Location", "/api/bookings/" <> booking_id)
     |> put_status(:created)
-    |> json(%{mensaje: "We are processing your request"})
+    |> json(%{msg: "We are processing your request, please be patient", booking_id: booking_id})
   end
   def update(conn, %{"action" => "accept", "username" => username, "id" => id}) do
-    GenServer.cast(id |> String.to_atom, {:process_accept, username})
-    # IO.inspect("'#{username}' is accepting a booking request")
-    json(conn, %{mensaje: "We will process your acceptance"})
+    IO.inspect("'#{username}' is accepting a booking request")
+    GenServer.cast(id |> String.to_atom(), {:handle_accept, username})
+    json(conn, %{msg: "We will process your acceptance"})
   end
-  def update(conn, %{"action" => "reject", "username" => username, "id" => id}) do
-    GenServer.cast(id |> String.to_atom, {:process_reject, username})
+  def update(conn, %{"action" => "reject", "username" => username, "id" => _id}) do
     IO.inspect("'#{username}' is rejecting a booking request")
-    json(conn, %{mensaje: "We will process your rejection"})
+    json(conn, %{msg: "We will process your rejection"})
   end
-  def update(conn, %{"action" => "cancel", "username" => username, "id" => _id}) do
+  def update(conn, %{"action" => "cancel", "username" => username, "id" => id}) do
     IO.inspect("'#{username}' is cancelling a booking request")
-    json(conn, %{mensaje: "We will process your cancelation"})
+    GenServer.cast(id |> String.to_atom(), {:handle_cancel, username})
+    json(conn, %{msg: "We will process your cancelation"})
+  end
+  def update(conn, %{"action" => "notify_arrival", "username" => username, "id" => id}) do
+    GenServer.cast(id |> String.to_atom(), {:notify_arrival, username})
+    IO.inspect("'#{username}' has arrived")
+    json(conn, %{msg: "We will process your rejection"})
+
   end
 end
